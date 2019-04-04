@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ConfigRoot>
+    <EwsUri>your_EWS_URI_usually_is_https://webmail.xxx.com/EWS/Exchange.asmx</EwsUri>
+    <Credentials>
+        <Credential Type="domain">
+            <Username>domain_user_with_access_to_resource_mailbox</Username>
+            <Password>password_of_the_above_account</Password>
+            <Domain>your_domain_name</Domain>
+        </Credential>
+    </Credentials>
+</ConfigRoot>

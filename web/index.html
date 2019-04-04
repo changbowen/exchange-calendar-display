@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Calendar Display</title>
+    <link rel="shortcut icon" type="image/png" href="calendar.png"/>
+    <!--jquery libraries-->
+    <script class="js_jquery" src="external/jquery/jquery-3.3.1.min.js"></script>
+    <script class="js_jquery_cookie" src="external/jquery/jquery.cookie-1.4.1.min.js"></script>
+    <!--<script class="js_jquery_ui" src="external/jquery/jquery-ui-1.12.1/jquery-ui.min.js"></script>-->
+
+    <!--fullcalendar libraries-->
+    <link rel='stylesheet' href='external/fullcalendar-3.9.0/fullcalendar.css'/>
+    <script src='external/moment.min.js'></script>
+    <script src='external/fullcalendar-3.9.0/fullcalendar.js'></script>
+
+    <!--popper, bootstrap and fontawesome libraries-->
+    <!--<script src="external/popper.min.js"></script>-->
+    <!--<link rel="stylesheet" href="external/bootstrap/bootstrap.min.css"/>-->
+    <!--<script src="external/bootstrap/bootstrap.min.js"></script>-->
+    <!--<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">-->
+
+    <link rel="stylesheet" href="css/fonts.css">
+    <script src="js/helpers.js"></script>
+
+    <style>
+        head, body, html {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #calendar {
+            margin: 2.5vw;
+            font-size: 2.1vw;
+        }
+
+        .fc-toolbar.fc-header-toolbar {
+            color: white;
+            margin: 0;
+            text-shadow: 0 0.1vw 0.2vw black;
+        }
+
+        .fc-view {
+            border-collapse: separate;
+            border-radius: 1vw;
+            padding: 1vw;
+            margin: 3vw;
+            background: linear-gradient(-75deg, #63aaff69, #63aaffa8 20%, #63aaff9c 20.3%, #63aaff99 40%, #63aaffa8 40.3%, #63aaffa8 50%, #7ab6ffb0 50.3%, #7ab6ffb0 80%, #63aaffa8 80.3%, #63aaff59);
+            filter: drop-shadow(0 0.3vw 0.4vw black);
+        }
+
+        .fc-unthemed th, .fc-unthemed td {
+            border-color: transparent;
+            border-width: 0;
+        }
+
+        .fc-unthemed td.fc-today {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 0.625vw;
+        }
+
+        .fc-now-indicator {
+            border-color: white;
+        }
+
+        .fc-event {
+            border-radius: 0.35vw !important;
+            border: 0 solid;
+            margin: 0.125vw;
+            padding: 0.25vw;
+            font-size: 1.2vw;
+            filter: drop-shadow(0 0 0.2vw #4b4b4b);
+        }
+
+        .fc-event .fc-bg {
+            background: unset;
+            opacity: unset;
+        }
+
+        .fc-time {
+            font-size: 1.1vw !important;
+        }
+
+        /*row height*/
+        .fc-time-grid .fc-slats td {
+            height: 1.84vw;
+        }
+
+        .fc-scroller {
+            overflow: hidden !important;
+        }
+
+        .fc table {
+            font-size: 1.2vw;
+            color: white;
+        }
+
+        h1 { font-size: 2.8vw; }
+        h2 { font-size: 2.1vw; }
+        h3 { font-size: 1.65vw; }
+        h4 { font-size: 1.4vw; }
+        h5 { font-size: 1.2vw; }
+        h6 { font-size: 0.95vw; }
+
+        .fader {
+            opacity: 0;
+            transition: opacity 2s linear;
+        }
+
+        .fader-show {
+            opacity: 1;
+        }
+
+        /*.fc-agendaWeek-view tr {
+            height: 40px;
+        }
+        .fc-agendaDay-view tr {
+            height: 40px;
+        }*/
+
+        /*.popover {
+            max-width: none;
+        }*/
+
+    </style>
+
+    <script>
+        //image onload handler
+        function crossFade(fadeInImg, fadeOutImg) {
+            setTimeout(() => {
+                fadeOutImg.classList.remove('fader-show');
+                setTimeout(() => fadeInImg.classList.add('fader-show'), 200);
+            }, 100);
+        }
+
+        //background image cycle
+        setInterval(()=>{
+            $.ajax({
+                type: 'POST',
+                url: 'EwsApiServlet',
+                dataType: 'json',
+                async: true,
+                data: {
+                    funcName: 'GetFileList',
+                    relPath: 'image/',
+                },
+                success: function (resp) {
+                    //cross-fade two bg images
+                    //get the visible image to manipulate with
+                    let bgImgs = document.getElementsByClassName('bgImg');
+                    if (bgImgs.length !== 2) return;
+                    let bgImgVis, bgImgHid;
+                    if (bgImgs[0].classList.contains('fader-show')) {
+                        bgImgVis = bgImgs[0];
+                        bgImgHid = bgImgs[1];
+                    }
+                    else {
+                        bgImgVis = bgImgs[1];
+                        bgImgHid = bgImgs[0];
+                    }
+
+                    //get the index of the file to change src to
+                    let curFile = bgImgVis.src.substring(bgImgVis.src.lastIndexOf('/') + 1);
+                    let curIdx = resp.response.indexOf(curFile);
+                    let maxIdx = resp.response.length - 1;
+                    if (curIdx >= maxIdx) curIdx = 0; else curIdx += 1;
+
+                    //change src (fading is handled by onload event)
+                    bgImgHid.src = 'image/' + resp.response[curIdx];
+                },
+                error: function (xhr) {
+                    console.log(`API call failed (${xhr.status}).`);
+                }
+            });
+        }, 30000);
+
+        let mailbox = getUrlParameterByName('mailbox');
+        if (mailbox == null)
+            throw new Error('Target mailbox is undefined.');
+        else
+            document.title += ' - ' + mailbox;
+
+
+        $(document).ready(function () {
+            $('#calendar').fullCalendar({
+                defaultView: 'agendaWeek',
+                nowIndicator: true,
+                // themeSystem: 'bootstrap4',
+                header: {
+                    // left: 'prev,next today',
+                    left: '',
+                    center: '',
+                    right: ''
+                    // right: 'month,agendaWeek,agendaDay,listMonth'
+                },
+                allDaySlot: false,
+                firstDay: 1,
+                minTime: '08:00:00',
+                maxTime: '20:00:00',
+                timezone: 'local',
+                timeFormat: 'HH:mm',
+                contentHeight: 'auto',
+                eventBackgroundColor: '#32ac46',
+                events: getEvents,
+                // viewRender: function (view, element) {
+                //     //apply the center title template
+                //     let centerDiv = document.querySelector('#calendar .fc-center');
+                //     centerDiv.clearChildNodes();
+                //     centerDiv.createElement('h2', null, {'textContent': view.title});
+                // },
+                // eventRender: function(eventObj, $el) {
+                //     $el.popover({
+                //         html: true,
+                //         title: eventObj.title,
+                //         content: function () {
+                //             let popper = document.getElementById('popperContent').cloneNode(true);
+                //             popper.hidden = false;
+                //             popper.querySelector('#span_startDate').textContent = eventObj.start.format('llll');
+                //             popper.querySelector('#span_endDate').textContent = eventObj.end.format('llll');
+                //             return popper;
+                //         },
+                //         trigger: 'hover',
+                //         container: 'body',
+                //     });
+                // }
+                // windowResize: updateSizes,
+                // eventAfterAllRender: blah,
+            });
+        });
+
+        //refetch events every 20 mins
+        setInterval(()=>{
+            $('#calendar').fullCalendar('refetchEvents');
+        }, 1200000);
+
+        //reload at next day
+        setTimeout(()=>{
+            location.reload(true);
+        }, moment().endOf('day').add(10,'minute').diff());
+
+    </script>
+</head>
+<body style="background: black;">
+<div id='calendar'></div>
+<div id='popperContent' hidden>
+    <p style="margin: 0"><strong>Start: </strong><span id='span_startDate'></span></p>
+    <p style="margin: 0"><strong>End: </strong><span id='span_endDate'></span></p>
+</div>
+<img id="bgImgF" class="bgImg fader" src="image/0.jpg" style="position: absolute; top: 0; z-index: -998; width: 100vw; height: 64vw; object-fit: cover"
+     onload="crossFade(this, document.getElementById('bgImgB'))">
+<img id="bgImgB" class="bgImg fader" style="position: absolute; top: 0; z-index: -999; width: 100vw; height: 64vw; object-fit: cover"
+     onload="crossFade(this, document.getElementById('bgImgF'))">
+
+<!--<div id='titleContent' hidden>
+    <h2 id='h2'></h2>
+    <h3 id='h3'></h3>
+</div>-->
+<script>
+/**
+ * The Response object
+ * @typedef {{
+ * ErrorMsg:string,
+ * Email:string,
+ * DisplayName:string,
+ * Items:Array,
+ * }} Response
+ */
+    function getEvents(start, end, timezone, callback) {
+        $.ajax({
+            type: 'POST',
+            url: 'EwsApiServlet',
+            dataType: 'json',
+            async: true,
+            data: {
+                funcName: 'GetAppointments',
+                mailbox: mailbox,
+                startDate: start.valueOf(),
+                endDate: end.valueOf(),
+            },
+            success: function (resp) {
+                if (resp.error)
+                    console.log('API call failed.\r\n' + resp.error);
+                else if (resp.response.ErrorMsg)
+                    console.log('API call failed.\r\n' + resp.response.ErrorMsg);
+                else {
+                    /**@type {Array<{Start:number,End:number,Subject:string}>}*/
+                    let events = resp.response.Items;
+                    console.log({ start: start.toDate(), end: end.toDate(), events: events });
+
+                    //update the left, center, right title
+                    let view = $('#calendar').fullCalendar('getView');
+                    if (!view.titleUpdated) {//only update title once
+                        let leftDiv = document.querySelector('#calendar .fc-left');
+                        let rightDiv = document.querySelector('#calendar .fc-right');
+                        // let centerDiv = document.querySelector('#calendar .fc-center');
+                        //left title
+                        leftDiv.createElement('h2', null, {'textContent': view.title});
+                        //right title
+                        rightDiv.createElement('h4', null, {
+                            'textContent': resp.response.DisplayName,
+                            'style.textAlign': 'right',
+                            'style.margin': '0',
+                            "style.float": 'unset',
+                        });
+                        rightDiv.createElement('h5', null, {
+                            'textContent': resp.response.Email,
+                            'style.textAlign': 'right',
+                            'style.margin': '0',
+                            "style.float": 'unset',
+                            'style.textDecoration': 'underline',
+                        });
+                        view.titleUpdated = true;
+                    }
+
+                    if (!events) return;
+                    callback(events.map(e => ({start:e.Start, end: e.End, title: e.Subject})));
+                }
+            },
+            error: function (xhr) {
+                console.log(`API call failed (${xhr.status}).`);
+            }
+        });
+    }
+
+    function toggleFullScreen(ele) {
+        if (!document.webkitFullscreenElement)
+            ele.webkitRequestFullScreen();
+        else
+            document.webkitCancelFullScreen();
+    }
+
+    document.addEventListener("click", function(e) {
+        toggleFullScreen(document.documentElement);
+    }, false);
+
+
+    // function _getEvents() {
+    //     let /**Array<{title:string,start:number,end:number}>*/result = null;
+    //     let startDate = new Date(new Date().toDateString());
+    //     startDate.setDate(startDate.getDate() - startDate.getDay() + (startDate.getDay() === 0 ? -6 : 1));
+    //     let endDate = new Date(startDate);
+    //     endDate.setDate(startDate.getDate() + 7);
+    //     endDate.setSeconds(-1);
+    // }
+
+    // function updateToday() {
+    //     let calendar = $('#calendar');
+    //     let date = calendar.fullCalendar('getDate');
+    //     let dayDiff = moment().date() - date.date();
+    //     let newToday;
+    //     if (dayDiff > 0) {
+    //         newToday = $('.fc-today', calendar).map((i,e)=>$(e).nextAll().eq(dayDiff-1)[0]);
+    //     }
+    //     else if (dayDiff < 0) {
+    //         newToday = $('.fc-today', calendar).map((i,e)=>$(e).prevAll().eq(dayDiff)[0]);
+    //     }
+    //     else return;
+    //
+    //
+    //     let hasnextday = false;
+    //     for (let node of calendar[0].querySelectorAll('.fc-today')) {
+    //         if (node.nextElementSibling) {
+    //             hasnextday = true;
+    //             node.classList.remove('fc-today');
+    //             node.classList.add('tc-past');
+    //             let next = node.nextElementSibling;
+    //             next.classList.remove('fc-future');
+    //             next.classList.add('fc-today');
+    //         }
+    //     }
+    //     if (hasnextday) {
+    //         //update nowIndicator
+    //         calendar.fullCalendar('getView');
+    //
+    //
+    //     }
+    //     else {
+    //         calendar.fullCalendar('next');
+    //     }
+    // }
+</script>
+</body>
+</html>

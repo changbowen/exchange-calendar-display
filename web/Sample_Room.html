@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!--disables google translate prompt-->
+    <meta name="google" content="notranslate">
+    <title>Meeting Room Bookings - Sample Room</title>
+    <link rel="shortcut icon" type="image/png" href="calendar.png"/>
+</head>
+<body style="margin: 0; overflow: hidden;">
+<iframe id="mainframe" allowfullscreen="true" style="width: 100%; height: 100vh; background: black; border: 0"
+        src="http://your-deployment-server/exchange-calendar-display/?mailbox=email-of-your-resource-mailbox@your-domain.com"></iframe>
+<script>
+    //refresh iframe every 0.5 day
+    setInterval(()=>{
+        let frame = document.getElementById('mainframe');
+        if (frame) frame.src += '';//this, or frame.src = frame.src, reloads the iframe
+    }, 43200000)
+</script>
+</body>
+</html>
