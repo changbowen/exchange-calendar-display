@@ -1,8 +1,8 @@
-### Android Tablet Setup
-##### The guide only applies to the setup of the automation script on Android devices. The display of the web content does not rely on the script.
-##### The setup is not tested on many different Android versions or models.
+## Android Tablet Setup
+#### The guide only applies to the setup of the automation script on Android devices. The display of the web content does not rely on the script.
+#### The setup is not tested on many different Android versions or models.
 
-#### Preparation
+### Preparation
 - Download android-platform-tools from [the official release page](https://developer.android.com/studio/releases/platform-tools). The package provides the adb and fastboot binaries.
 - If you are using Windows, you need to get the Android USB drivers from the OEM site. A list of the sites can be found [here](https://developer.android.com/studio/run/oem-usb#Drivers). When your device does not exist in the list, remember **there is always a way to find the drivers**.
 - Stock ROM for the tablet from the OEM either by downloading from the website or directly contact.
@@ -11,7 +11,7 @@
 - On the PC and account that will be remotely managing the tablet, get the content of `~/.android/adbkey.pub` and replace the echo content with it under the line `## add adb keys for remote debugging`.
 - Get the local html file for the meeting room. For e.g. `Sample_Room.html`.
 
-#### Android Setup (Recommended with Magisk)
+### Android Setup (Recommended with Magisk)
 1. Root the tablet with Magisk.
     1. Get Magisk Manager apk.
     2. On your PC, find the `boot.img` file inside the stock ROM and extract it from the ROM file.
@@ -40,7 +40,7 @@
     4. Open Magisk Manager, open menu → Modules, install the Magisk module zip and reboot.
     5. After reboot, the script will run and display the calendar automatically.
 
-#### Android Setup (when Magisk does not work)
+### Android Setup (when Magisk does not work)
 1. Root the tablet with your own magic.
     > When Magisk fails, you need to try other ways to root the tablet. While there are numerous ways to do it (such as SuperSU, or your ROM may even provides an option to root), different ways succeed with different ROMs. That's why there is not a universal method.
 2. Configure a service manually by modifying the `boot.img`.
@@ -67,7 +67,7 @@
     2. Copy `MRCD.sh` and the HTML file to `/sdcard/MRCD/` on the tablet.
     3. Connect power & network and reboot to see the script working.
 
-#### Automation Script Behavior
+### Automation Script Behavior
 The monitoring bash script runs on the background to try to always keep the calendar displayed fullscreen. Additionally the script will do the following:
 
 - Apply customization for the purpose of the tablet.
@@ -79,7 +79,7 @@ The monitoring bash script runs on the background to try to always keep the cale
 - Lock all inputs after 30 mins as a security feature. Rebooting the device clears the lock.
 - If the script file is deleted or inaccessible, shut down the tablet after 30 mins.
 
-#### Maintenance
+### Maintenance
 While the initial setup of the Android device (rooting etc.) can be troublesome, the solution is designed to be maintenance-free.
 
 30 minutes after boot, all existing inputs (buttons, touch screen, keyboard...) will be locked and the only way to manage the device is ADB over TCP/IP. New input devices can still be connected and used such as external keyboards and mouse via OTG (USB).
@@ -90,7 +90,7 @@ It is recommended to install a terminal emulator on the tablet. When all inputs 
 
 If Magisk is used, it is possible to disable the script from Magisk Manager (needs reboot) for maintenance activities to be done locally on the device.
 
-##### Connecting to the tablet via ADB over TCP/IP
+#### Connecting to the tablet via ADB over TCP/IP
 To connect to the ADB service on the tablet, from the PC and user whose public adb key is already added to `/data/misc/adb/adb_keys` on the tablet to be managed, assuming the IP of the tablet is 10.0.0.100, use the below commands.
 ```bash
 adbusr@WebSrvTest:~$ adb connect 10.0.0.100
@@ -113,7 +113,7 @@ a10s_m3h3:/ #
 
 Some useful adb commands can be found [here](https://gist.github.com/Pulimet/5013acf2cd5b28e55036c82c91bd56d8).
 
-##### Updating the Automation Scripts
+#### Updating the Automation Scripts
 The automation consists of two scripts. The first script is installed with the Magisk module (the zip file) and cannot be updated remotely. In case an update is needed, it needs to be done by first pushing the zip file to the tablet and then reinstall the module from Magisk Manager app. This script contains only few basic customization actions to enable remote debugging and then it calls the second script.
 
 The second script contains everything else as described in the previous section and can be updated remotely by pushing the `MRCD.sh` file to the tablet and reboot.
