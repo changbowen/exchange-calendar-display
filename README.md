@@ -1,5 +1,5 @@
 ## Meeting Room Calendar Display
-##### Web-based stylish bookings display for Exchange mailboxes
+#### Web-based stylish bookings display for Exchange mailboxes
 
 - Frontend: FullCalendar
 - Backend: EWS Java API + Tomcat
