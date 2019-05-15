@@ -1,5 +1,10 @@
 #!/system/bin/sh
-## debugging
+#  --------------------------------------
+# | MRCD Monitoring Script by Carl Chang |
+# |           Ver. 20190515.2            |
+#  --------------------------------------
+
+## debugging lines
 
 # -----------------------------
 # - BASE FUNCTION DEFINITIONS -
@@ -42,6 +47,9 @@ mkdir -p "$MRCD_ROOT"
 echo "CONTENTS OF THE ~/.android/adbkey.pub FILE UNDER THE USER PROFILE THAT WILL BE USED TO MANAGE THE PAD" > /data/misc/adb/adb_keys
 sleep 10
 
+## optionally set NTP server if internet access is limited
+#settings put global ntp_server server-in-your-org
+
 ## update hostname from html file name
 #find $MRCD_ROOT/ -name *.html -exec basename {} \;
 logging 'Updating hostname based on HTML file name...'
@@ -59,7 +67,7 @@ for i in $(ls /sys/class/net/) ; do
     link_status=${link_status##*state\ }
     link_status=${link_status%%\ *}
     logging "  - Link $i status is $link_status"
-    if [ $link_status = "UP" ]; then
+    if [ $link_status != "DOWN" ]; then
         logging "    - Flushing and restarting link $i"
         (ip addr flush $i; ip link set $i down; ip link set $i up) &
     fi
@@ -72,6 +80,11 @@ sleep 10
     ### enable debugging
     settings put global development_settings_enabled 1
     settings put global adb_enabled 1
+
+    ### toggle auto time to trigger NTP update
+    settings put global auto_time_zone 1
+    settings put global auto_time 0
+    settings put global auto_time 1
 
     ### restart adbd on tcpip
     setprop service.adb.tcp.port 5555
