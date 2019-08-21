@@ -3,7 +3,7 @@
 
 - Frontend: FullCalendar
 - Backend: EWS Java API + Tomcat
-- Client Recommended: Chrome web browser on Android tablets with stable connection to the hosting server
+- Client Recommended: Chrome web browser on Android tablets with stable network connection to the hosting server
 
 ![screenshot](MRCD_generic.png)
 
